@@ -1,0 +1,124 @@
+INCLUDE Irvine32.inc
+
+.data
+; ---------------------------
+; Basic Pac-Man Maze
+; ---------------------------
+map BYTE "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",0
+    BYTE "@@ .  .  .  .  .  .  .  .  .  @@@ .  .  .  .  .  .  .  .  .   @@",0
+    BYTE "@@                                                            @@",0
+    BYTE "@@  @@@@@@@@@@@        @@@@@@@@@@@@@@@@@@        @@@@@@@@@@@  @@",0
+    BYTE "@@  @        .         @@@@@@@@@@@@@@@@@@         .        @  @@",0
+    BYTE "@@  @                                                     @  @@",0
+    BYTE "@@  @   .    .    .    .      @@@   .     .     .     .    @  @@",0
+    BYTE "@@  @             @@@@@@@@@@  @@@  @@@@@@@@@@@             @  @@",0
+    BYTE "@@  @             @@@@        @@@         @@@@             @  @@",0
+    BYTE "@@  @             @@@@  .   . @@@  .   .  @@@@             @  @@",0
+    BYTE "@@  @             @@@@@@@@@@@@@@@@@@@@@@@@@@@@             @  @@",0
+    BYTE "@@ .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  .  . . @@",0
+    BYTE "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@",0
+
+; Pac-Man start position
+pacRow DWORD 2
+pacCol DWORD 3
+
+.code
+main PROC
+    call Clrscr
+
+GameLoop:
+    ; Draw map with Pac-Man
+    call DrawMap
+
+    ; Read key
+    call ReadKey
+    cmp al, 0       ; check for special key
+    jne Skip
+    call ReadKey    ; get arrow key code in AL
+
+    ; Move Pac-Man based on arrow key
+    cmp al, 72      ; up arrow
+    jne CheckDown
+    call MoveUp
+    jmp Skip
+
+CheckDown:
+    cmp al, 80      ; down arrow
+    jne CheckLeft
+    call MoveDown
+    jmp Skip
+
+CheckLeft:
+    cmp al, 75      ; left arrow
+    jne CheckRight
+    call MoveLeft
+    jmp Skip
+
+CheckRight:
+    cmp al, 77      ; right arrow
+    jne Skip
+    call MoveRight
+
+Skip:
+    jmp GameLoop
+
+main ENDP
+
+
+; ---------------------------
+; Draw the map with Pac-Man
+; ---------------------------
+DrawMap PROC
+    call Clrscr
+    mov esi, OFFSET map
+    mov ecx, 0
+
+NextLine:
+    mov edx, esi
+    call WriteString
+    call CrLf
+
+    add esi, LENGTHOF map[0]
+    cmp BYTE PTR [esi], 0
+    jne NextLine
+
+    ; Draw Pac-Man at position
+    mov eax, pacRow
+    mov ebx, pacCol
+    call Gotoxy
+    mov al, 'P'
+    call WriteChar
+
+    ret
+DrawMap ENDP
+
+
+; ---------------------------
+; Movement Procedures
+; ---------------------------
+MoveUp PROC
+    cmp pacRow, 1
+    jle ExitMove
+    dec pacRow
+ExitMove: ret
+MoveUp ENDP
+
+MoveDown PROC
+    inc pacRow
+    ret
+MoveDown ENDP
+
+MoveLeft PROC
+    cmp pacCol, 1
+    jle ExitMove
+    dec pacCol
+ExitMove: ret
+MoveLeft ENDP
+
+MoveRight PROC
+    inc pacCol
+    ret
+MoveRight ENDP
+
+
+END main
